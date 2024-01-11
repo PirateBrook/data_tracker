@@ -1,6 +1,6 @@
 name: data_tracker
 description: "A Data Tracker for Analytics in Component widget styling. use InheritedWidget that simplifies the tracker system share data for Component widget styling, Avoid multi-level parameter penetration ."
-version: 0.0.1
+version: 0.0.2
 repository: https://github.com/PirateBrook/data_tracker.git
 
 environment:
