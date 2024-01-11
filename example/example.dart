@@ -10,7 +10,7 @@ class Example extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Tracker(
+    return TrackerScope(
       params: const {"id": 101},
       parentContext: context,
       child: const ExampleComponent(),
@@ -23,20 +23,27 @@ class ExampleComponent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Tracker(
+    return TrackerScope(
       params: const {"name": "brook", "age": "18"},
       parentContext: context,
       child: Builder(builder: (conetxt) {
-        // 获取单个埋点数据， 自底向上检索
         final id = Tracker.find(conetxt, "id");
-        // 根据keys获取Map， 自底向上检索
+        final idOrDefault =
+            Tracker.findOrDefault(context, 'id', defaultVal: "101");
         final filters = Tracker.findMap(conetxt, ['id', 'name']);
-        // 获取所有埋点信息， 自底向上检索
+        final allFilters = Tracker.findAllMap(conetxt, ['id', 'name']);
+        final currentParams = Tracker.collectSelf(conetxt);
         final allParams = Tracker.collect(conetxt);
 
-        return Center(
-          child: Text(
-              "id = $id | name = ${filters['name']} | age = ${allParams['age']}"),
+        return Column(
+          children: [
+            Text('$id'),
+            Text('$idOrDefault'),
+            Text('$filters'),
+            Text('$allFilters'),
+            Text('$currentParams'),
+            Text('$allParams'),
+          ],
         );
       }),
     );

@@ -9,7 +9,7 @@ void main() {
       await tester.pumpWidget(
         Builder(
           builder: (context) {
-            return Tracker(
+            return TrackerScope(
               params: const {"id": "101"},
               parentContext: context,
               child: const Column(
@@ -32,7 +32,7 @@ void main() {
       await tester.pumpWidget(
         Builder(
           builder: (context) {
-            return Tracker(
+            return TrackerScope(
               params: const {"id": "101", "name": "brook", "age": "18"},
               parentContext: context,
               child: const ConsumerList(
@@ -49,12 +49,54 @@ void main() {
   );
 
   testWidgets(
+    "find all params of current context",
+    (tester) async {
+      await tester.pumpWidget(
+        Builder(
+          builder: (context) {
+            return TrackerScope(
+              params: const {
+                "id": "101",
+                "name": "brook",
+              },
+              parentContext: context,
+              child: TrackerScope.builder(
+                  params: const {"age": "18", "gender": 1},
+                  builder: (context) {
+                    final currentParams = Tracker.collectSelf(context);
+                    return Column(
+                      children: [
+                        const Spacer(),
+                        ...currentParams.keys.map(
+                          (key) => SizedBox(
+                            height: 40,
+                            child: Text(
+                              "${currentParams[key]}",
+                              textDirection: TextDirection.ltr,
+                            ),
+                          ),
+                        )
+                      ],
+                    );
+                  }),
+            );
+          },
+        ),
+      );
+      expect(find.text('101'), findsNothing);
+      expect(find.text('brook'), findsNothing);
+      expect(find.text('18'), findsOneWidget);
+      expect(find.text('1'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
     "find all params",
     (tester) async {
       await tester.pumpWidget(
         Builder(
           builder: (context) {
-            return Tracker(
+            return TrackerScope(
               params: const {
                 "id": "101",
                 "name": "brook",
@@ -75,12 +117,12 @@ void main() {
   );
 
   testWidgets(
-    'findKey cross tracker',
+    'findKey cross tracker scope',
     (tester) async {
       await tester.pumpWidget(
         Builder(
           builder: (context) {
-            return Tracker(
+            return TrackerScope(
               params: const {"id": "101"},
               parentContext: context,
               child: Column(
@@ -88,7 +130,7 @@ void main() {
                   const Spacer(),
                   Builder(
                     builder: (context) {
-                      return Tracker(
+                      return TrackerScope(
                         params: const {"name": "brook"},
                         parentContext: context,
                         child: const Consumer(),
@@ -102,6 +144,102 @@ void main() {
         ),
       );
       expect(find.text('101'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'collect of this context`s TrackerScope',
+    (tester) async {
+      await tester.pumpWidget(
+        Builder(
+          builder: (context) {
+            return TrackerScope(
+              params: const {"id": "101"},
+              parentContext: context,
+              child: Column(
+                children: [
+                  const Spacer(),
+                  Builder(
+                    builder: (context) {
+                      return TrackerScope(
+                        params: const {"name": "brook"},
+                        parentContext: context,
+                        child: Builder(builder: (context) {
+                          final collections = Tracker.collectSelf(context);
+
+                          return Column(
+                            children: collections.keys
+                                .map(
+                                  (e) => SizedBox(
+                                    height: 40,
+                                    child: Text(
+                                      collections[e],
+                                      textDirection: TextDirection.ltr,
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                          );
+                        }),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+      expect(find.text('101'), findsNothing);
+      expect(find.text('brook'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'collect all',
+    (tester) async {
+      await tester.pumpWidget(
+        Builder(
+          builder: (context) {
+            return TrackerScope(
+              params: const {"id": "101"},
+              parentContext: context,
+              child: Column(
+                children: [
+                  const Spacer(),
+                  Builder(
+                    builder: (context) {
+                      return TrackerScope(
+                        params: const {"name": "brook"},
+                        parentContext: context,
+                        child: Builder(builder: (context) {
+                          final collections = Tracker.collect(context);
+
+                          return Column(
+                            children: collections.keys
+                                .map(
+                                  (e) => SizedBox(
+                                    height: 40,
+                                    child: Text(
+                                      collections[e],
+                                      textDirection: TextDirection.ltr,
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                          );
+                        }),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+      expect(find.text('101'), findsOneWidget);
+      expect(find.text('brook'), findsOneWidget);
     },
   );
 }
